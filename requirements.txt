@@ -1,0 +1,15 @@
+# Direct dependencies, pinned to versions verified to install and import together (Python 3.13).
+crewai==1.15.32
+autogen-agentchat==0.7.5
+autogen-core==0.7.5
+langchain-core==1.7.1
+chromadb==1.5.9
+sentence-transformers==6.2.0
+fastapi==0.162.0
+uvicorn==0.54.0
+httpx==0.28.1
+pytest==9.2.0
+
+# autogen-core needs protobuf 5.29.x; newer googleapis-common-protos (pulled by CrewAI's OpenTelemetry exporters) needs protobuf 6+.
+protobuf==5.29.6
+googleapis-common-protos==1.69.2
