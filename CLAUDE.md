@@ -280,3 +280,42 @@ Submit **one public GitHub repository link**. The repository must contain, in to
 deployment code with transcripts demonstrating every task above, and a `README.md`
 confirming everything runs under `MOCK_LLM` with zero API keys. There is exactly one
 submission link for the whole project.
+
+## Project working rules (added by PANKAJ)
+
+### Quality gate after every Part
+
+When a Part is built, do these steps before calling it done:
+
+1. **Run it end to end** with `MOCK_LLM`, zero API keys and
+   `CREWAI_DISABLE_TELEMETRY=true`. It must finish with no errors and no
+   tracebacks. Read every warning. The only accepted warning is the
+   `LangChainDeprecationWarning` that the brief already mentions.
+2. **Test it like a hacker.** Try to break what that Part built, for example:
+   - prompt injection ("ignore your instructions…", role-play, hidden instructions inside a question)
+   - PII leaks: a phone number must never appear unmasked in answers, logs or transcripts
+   - bad input: empty text, very long text, odd Unicode, wrong types
+   - bad record IDs: unknown IDs, `../`, SQL-like or script-like text
+   - out-of-scope questions that must trigger "I don't know"
+   - tool misuse: an agent other than the Lookup Agent trying to call `check_appointment_status`
+   - oversized requests that must be rejected by the cost budget
+   - WebSocket clients that drop in the middle of a chat
+   Only the attacks that apply to that Part are needed.
+3. **Fix the real cause** of every problem found. Do not hide it or work around it.
+4. **Write it down** in `security/part<N>_review.md`: each attack tried, what
+   happened, and what was fixed.
+5. **Stop for PANKAJ's review** before starting the next Part.
+
+### Test rules
+
+1. Tests use `pytest` and live in `tests/`, one file per Part
+   (`tests/test_part1_*.py`, …). Hacker-style tests go in `tests/security/`.
+2. Every Part ships with its tests. Every acceptance criterion and every
+   guardrail has at least one test that shows it working, and one that shows it
+   refusing bad input.
+3. Tests run offline, under `MOCK_LLM`, with no keys, and give the same result every
+   time (seed 42).
+4. `pytest -q` must pass 100% before a Part is pushed or a pull request is opened.
+5. Never skip, disable, delete or loosen a test to make it pass. Fix the code instead.
+6. When a bug is found, first write a test that fails because of it, then fix the bug.
+7. Test data is made up. No real names, phone numbers, diagnoses or insurance IDs.
